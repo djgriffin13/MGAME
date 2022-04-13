@@ -1,6 +1,8 @@
+# Install and load library
+devtools::install_github("djgriffin13/isNet")
 library(isNet)
 
-# Lode data
+# Lode data the path needs to go to the data
 data = readr::read_csv("./tutorial/data/selection_data.csv")
 
 # Calculate distance
