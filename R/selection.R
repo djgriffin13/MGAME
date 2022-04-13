@@ -12,7 +12,6 @@
 summary.ame_mg <- function(object, ...)
 {
   fit <- object
-  require(amen)
   tmp <- cbind(
     apply(fit$BETA, 2, mean),
     apply(fit$BETA, 2, sd) ,
