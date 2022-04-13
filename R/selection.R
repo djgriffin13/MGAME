@@ -11,32 +11,46 @@
 #' @export
 summary.ame_mg <- function(object, ...)
 {
-  fit<-object
+  fit <- object
   require(amen)
-  tmp<-cbind(apply(fit$BETA,2,mean), apply(fit$BETA,2,sd) ,
-             apply(fit$BETA,2,mean)/apply(fit$BETA,2,sd) ,
-             2*(1-pnorm( abs(apply(fit$BETA,2,mean)/apply(fit$BETA,2,sd)))))
-  colnames(tmp)<-c("pmean","psd","z-stat","p-val")
+  tmp <- cbind(
+    apply(fit$BETA, 2, mean),
+    apply(fit$BETA, 2, sd) ,
+    apply(fit$BETA, 2, mean) / apply(fit$BETA, 2, sd) ,
+    2 * (1 - pnorm(abs(
+      apply(fit$BETA, 2, mean) / apply(fit$BETA, 2, sd)
+    )))
+  )
+  colnames(tmp) <- c("pmean", "psd", "z-stat", "p-val")
   cat("\nRegression coefficients:\n")
-  print(round(tmp,3))
+  print(round(tmp, 3))
 
   cat("\n_________________________________________________\n")
 
-  if(!is.null(fit$GOF)) tmpgof<-apply(fit$GOF,2,mean)
-  if(!is.null(fit$GOF) || !.is.null(fit$R2) || !.is.null(fit$R2_nm)) cat("\nModel Fit:\n")
-  if(!is.null(fit$R2)) cat("\nR^2 for model is: ", round(fit$R2,3))
-  if(!is.null(fit$R2_nm)) cat("\nR^2 compared againset random effects only: ", round(fit$R2_nm,3), "\n\n")
+  if (!is.null(fit$GOF))
+    tmpgof <- apply(fit$GOF, 2, mean)
+  if (!is.null(fit$GOF) ||
+      !.is.null(fit$R2) || !.is.null(fit$R2_nm))
+    cat("\nModel Fit:\n")
+  if (!is.null(fit$R2))
+    cat("\nR^2 for model is: ", round(fit$R2, 3))
+  if (!is.null(fit$R2_nm))
+    cat("\nR^2 compared againset random effects only: ",
+        round(fit$R2_nm, 3),
+        "\n\n")
 
-  if(!is.null(fit$GOF)) print(round(tmpgof,3))
-  if(!is.null(fit$GOF))cat("\nMinimum index fit:",round(min(tmpgof),3),"\n")
+  if (!is.null(fit$GOF))
+    print(round(tmpgof, 3))
+  if (!is.null(fit$GOF))
+    cat("\nMinimum index fit:", round(min(tmpgof), 3), "\n")
 
 
-  tmp<-cbind(apply(fit$VC,2,mean), apply(fit$VC,2,sd) )
-  colnames(tmp)<-c("pmean","psd")
+  tmp <- cbind(apply(fit$VC, 2, mean), apply(fit$VC, 2, sd))
+  colnames(tmp) <- c("pmean", "psd")
   cat("\n_________________________________________________\n")
 
   cat("\nVariance parameters:\n")
-  print(round(tmp,3))
+  print(round(tmp, 3))
 }
 
 
@@ -51,8 +65,8 @@ summary.ame_mg <- function(object, ...)
 #' @param mdl output from ame models of class ame
 #' @return a vector of porportions
 getAMEFit <- function(mdl) {
-  observed = mdl$GOF[1, ]
-  postGOF = mdl$GOF[-1, ]
+  observed = mdl$GOF[1,]
+  postGOF = mdl$GOF[-1,]
   postMeans = colMeans(postGOF)
   observed = abs(observed - postMeans)
   postGOF = abs(postGOF - postMeans)
@@ -77,7 +91,6 @@ getPrior <-
            lastPrior = list(),
            strong = F,
            strongFactor = 1000000) {
-
     if (length(lastPrior) == 0) {
       lastPrior = list()
       lastPrior$nu0 = 0
@@ -318,7 +331,7 @@ ameMG = function(data,
         Xcol = X_alter[[i]],
         Xdyad = X_dyad[[i]],
         prior = strongPrior,
-        R=R,
+        R = R,
         burn = 0,
         family = family,
         rvar = rvar,
@@ -337,7 +350,7 @@ ameMG = function(data,
       )
 
       # Record goodness of fit information
-      GOFPost[i, ] = getAMEFit(fit_model)
+      GOFPost[i,] = getAMEFit(fit_model)
       colnames(GOFPost) = colnames(ame_model$GOF)
 
       # Record Residuals
@@ -350,7 +363,7 @@ ameMG = function(data,
         fit_null = amen::ame(
           DV[[i]],
           prior = strongPrior_null,
-          R=R,
+          R = R,
           family = family,
           burn = 0,
           rvar = rvar,
@@ -393,4 +406,3 @@ ameMG = function(data,
 
   return(ame_model)
 }
-

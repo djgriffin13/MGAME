@@ -19,7 +19,6 @@ ameMG(
   nvar = TRUE,
   intercept = !is.element(family, c("rrl", "ord")),
   symmetric = FALSE,
-  odmax = rep(max(apply(Y > 0, 1, sum, na.rm = TRUE)), nrow(Y)),
   seed = 1,
   nscan = 5000,
   burn = 500,

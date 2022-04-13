@@ -6,7 +6,7 @@ library(isNet)
 data = readr::read_csv("./tutorial/data/selection_data.csv")
 
 # Calculate distance
-data$na_dist = sqrt((data$na_source - data$na_target)^2)
+data$na_dist = sqrt((data$na_source - data$na_target) ^ 2)
 
 # Run model
 fit = ameMG(
