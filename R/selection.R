@@ -1,6 +1,7 @@
 #' Summary of a multi group AME object
 #'
-#' Summary method for a multi group AME object
+#' Summary method for a multi group AME object. This is adapted from
+#' Peter Hoff's work for ame class
 #'
 #' @param object the output from an ameMG function
 #' @param ... unused

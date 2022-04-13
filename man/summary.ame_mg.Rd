@@ -15,7 +15,8 @@
 a summary of parameter estimates and confidence intervals for a multi-group AME
 }
 \description{
-Summary method for a multi group AME object
+Summary method for a multi group AME object. This is adapted from
+Peter Hoff's work for ame class
 }
 \author{
 Daniel Griffin
