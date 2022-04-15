@@ -9,8 +9,7 @@
 #'
 #' @author Daniel Griffin
 #' @export
-summary.ame_mg <- function(object, ...)
-{
+summary.ame_mg <- function(object, ...) {
   fit <- object
   tmp <- cbind(
     apply(fit$BETA, 2, mean),
@@ -24,7 +23,7 @@ summary.ame_mg <- function(object, ...)
   cat("\nRegression coefficients:\n")
   print(round(tmp, 3))
 
-  cat("\n_________________________________________________\n")
+  cat("\n______________________________________________________\n")
 
   if (!is.null(fit$GOF))
     tmpgof <- apply(fit$GOF, 2, mean)
@@ -32,24 +31,30 @@ summary.ame_mg <- function(object, ...)
       !.is.null(fit$R2) || !.is.null(fit$R2_nm))
     cat("\nModel Fit:\n")
   if (!is.null(fit$R2))
-    cat("\nR^2 for model is: ", round(fit$R2, 3))
+    cat("\n - R^2: ", round(fit$R2, 3), "\nIMPORTANT! This is bisaed for models with additive or multiplicitive random effects.")
   if (!is.null(fit$R2_nm))
-    cat("\nR^2 compared againset random effects only: ",
-        round(fit$R2_nm, 3),
-        "\n\n")
+    cat("\n\n - Psudo R^2: ",round(fit$R2_nm, 3), "\nThis accounts for the random effects and compars the full model to the model with the null model that includes the random effects.\n\n")
 
+  cat("\n - Badness of fit:\n")
   if (!is.null(fit$GOF))
     print(round(tmpgof, 3))
   if (!is.null(fit$GOF))
-    cat("\nMinimum index fit:", round(min(tmpgof), 3), "\n")
+    cat("Minimum index fit:", round(min(tmpgof), 3), "\n")
 
 
   tmp <- cbind(apply(fit$VC, 2, mean), apply(fit$VC, 2, sd))
   colnames(tmp) <- c("pmean", "psd")
-  cat("\n_________________________________________________\n")
+  cat("\n______________________________________________________\n")
 
   cat("\nVariance parameters:\n")
   print(round(tmp, 3))
+
+  cat("\nLegend:\n",
+      " va  - Ego Random Effect Variance\n",
+      " cab - Ego-Alter Random Effect Covariance\n",
+      " vb  - Alter Random Effect Variance\n",
+      " rho - Dyadic Residual Correlation (a->b compared to b->a)\n",
+      " ve  - Residual Variance")
 }
 
 
@@ -64,8 +69,8 @@ summary.ame_mg <- function(object, ...)
 #' @param mdl output from ame models of class ame
 #' @return a vector of porportions
 getAMEFit <- function(mdl) {
-  observed = mdl$GOF[1,]
-  postGOF = mdl$GOF[-1,]
+  observed = mdl$GOF[1, ]
+  postGOF = mdl$GOF[-1, ]
   postMeans = colMeans(postGOF)
   observed = abs(observed - postMeans)
   postGOF = abs(postGOF - postMeans)
@@ -176,6 +181,7 @@ ameMG = function(data,
                  nscan = 5000,
                  burn = 500,
                  odens = 25,
+                 odmax_grand = NULL,
                  modelFitTest = TRUE,
                  nullModel = TRUE,
                  gof = TRUE,
@@ -253,37 +259,37 @@ ameMG = function(data,
   # Run code for each team
   for (i in 1:length(groups)) {
     # Run Model:
-    ame_model = amen::ame(
-      Y = DV[[i]],
-      Xrow = X_ego[[i]],
-      Xcol = X_alter[[i]],
-      Xdyad = X_dyad[[i]],
-      R = R,
-      prior = prior,
-      family = family,
-      rvar = rvar,
-      cvar = cvar,
-      dcor = dcor,
-      nvar = nvar,
-      intercept = intercept,
-      symmetric = symmetric,
-      odmax = odmax,
-      seed = seed,
-      nscan = nscan,
-      burn = burn,
-      odens = odens,
-      plot = makePlot,
-      print = verboseOutput,
-      gof = gof
-    )
-    prior = getPrior(ame_model, prior)
-
-    if (nullModel && modelFitTest) {
-      # Run null (Excluding all X's) model used to calculate R^2
-      null_model = amen::ame(
+    if (is.null(odmax_grand))
+      ame_model = amen::ame(
         Y = DV[[i]],
+        Xrow = X_ego[[i]],
+        Xcol = X_alter[[i]],
+        Xdyad = X_dyad[[i]],
         R = R,
-        prior = null_prior,
+        prior = prior,
+        family = family,
+        rvar = rvar,
+        cvar = cvar,
+        dcor = dcor,
+        nvar = nvar,
+        intercept = intercept,
+        symmetric = symmetric,
+        seed = seed,
+        nscan = nscan,
+        burn = burn,
+        odens = odens,
+        plot = makePlot,
+        print = verboseOutput,
+        gof = gof
+      )
+    else
+      ame_model = amen::ame(
+        Y = DV[[i]],
+        Xrow = X_ego[[i]],
+        Xcol = X_alter[[i]],
+        Xdyad = X_dyad[[i]],
+        R = R,
+        prior = prior,
         family = family,
         rvar = rvar,
         cvar = cvar,
@@ -300,6 +306,53 @@ ameMG = function(data,
         print = verboseOutput,
         gof = gof
       )
+
+    prior = getPrior(ame_model, prior)
+
+    if (nullModel && modelFitTest) {
+      # Run null (Excluding all X's) model used to calculate R^2
+      if (is.null(odmax_grand))
+        null_model = amen::ame(
+          Y = DV[[i]],
+          R = R,
+          prior = null_prior,
+          family = family,
+          rvar = rvar,
+          cvar = cvar,
+          dcor = dcor,
+          nvar = nvar,
+          intercept = intercept,
+          symmetric = symmetric,
+          seed = seed,
+          nscan = nscan,
+          burn = burn,
+          odens = odens,
+          plot = makePlot,
+          print = verboseOutput,
+          gof = gof
+        )
+      else
+        null_model = amen::ame(
+          Y = DV[[i]],
+          R = R,
+          prior = null_prior,
+          family = family,
+          rvar = rvar,
+          cvar = cvar,
+          dcor = dcor,
+          nvar = nvar,
+          intercept = intercept,
+          symmetric = symmetric,
+          odmax = odmax,
+          seed = seed,
+          nscan = nscan,
+          burn = burn,
+          odens = odens,
+          plot = makePlot,
+          print = verboseOutput,
+          gof = gof
+        )
+
       null_prior = getPrior(null_model, null_prior)
     }
 
@@ -324,47 +377,39 @@ ameMG = function(data,
   if (modelFitTest) {
     for (i in 1:length(groups)) {
       #Run model with input for each team
-      fit_model = amen::ame(
-        DV[[i]],
-        Xrow = X_ego[[i]],
-        Xcol = X_alter[[i]],
-        Xdyad = X_dyad[[i]],
-        prior = strongPrior,
-        R = R,
-        burn = 0,
-        family = family,
-        rvar = rvar,
-        cvar = cvar,
-        dcor = dcor,
-        nvar = nvar,
-        intercept = intercept,
-        symmetric = symmetric,
-        odmax = odmax,
-        seed = seed,
-        nscan = nscan,
-        odens = odens,
-        plot = makePlot,
-        print = verboseOutput,
-        gof = gof
-      )
-
-      # Record goodness of fit information
-      GOFPost[i,] = getAMEFit(fit_model)
-      colnames(GOFPost) = colnames(ame_model$GOF)
-
-      # Record Residuals
-      residuals = append(residuals, c((fit_model$YPM - DV[[i]]) ^ 2))
-      avgResiduals = append(avgResiduals, c((DV[[i]] - mean(DV[[i]], na.rm = T)) ^
-                                              2))
-
-      if (nullModel) {
-        #Run null model with input for each team
-        fit_null = amen::ame(
+      if (is.null(odmax_grand))
+        fit_model = amen::ame(
           DV[[i]],
-          prior = strongPrior_null,
+          Xrow = X_ego[[i]],
+          Xcol = X_alter[[i]],
+          Xdyad = X_dyad[[i]],
+          prior = strongPrior,
           R = R,
-          family = family,
           burn = 0,
+          family = family,
+          rvar = rvar,
+          cvar = cvar,
+          dcor = dcor,
+          nvar = nvar,
+          intercept = intercept,
+          symmetric = symmetric,
+          seed = seed,
+          nscan = nscan,
+          odens = odens,
+          plot = makePlot,
+          print = verboseOutput,
+          gof = gof
+        )
+      else
+        fit_model = amen::ame(
+          DV[[i]],
+          Xrow = X_ego[[i]],
+          Xcol = X_alter[[i]],
+          Xdyad = X_dyad[[i]],
+          prior = strongPrior,
+          R = R,
+          burn = 0,
+          family = family,
           rvar = rvar,
           cvar = cvar,
           dcor = dcor,
@@ -379,6 +424,60 @@ ameMG = function(data,
           print = verboseOutput,
           gof = gof
         )
+
+      # Record goodness of fit information
+      GOFPost[i, ] = getAMEFit(fit_model)
+      colnames(GOFPost) = colnames(ame_model$GOF)
+
+      # Record Residuals
+      residuals = append(residuals, c((fit_model$YPM - DV[[i]]) ^ 2))
+      avgResiduals = append(avgResiduals, c((DV[[i]] - mean(DV[[i]], na.rm = T)) ^
+                                              2))
+
+      if (nullModel) {
+        #Run null model with input for each team
+        if (odmax_grand)
+          fit_null = amen::ame(
+            DV[[i]],
+            prior = strongPrior_null,
+            R = R,
+            family = family,
+            burn = 0,
+            rvar = rvar,
+            cvar = cvar,
+            dcor = dcor,
+            nvar = nvar,
+            intercept = intercept,
+            symmetric = symmetric,
+            seed = seed,
+            nscan = nscan,
+            odens = odens,
+            plot = makePlot,
+            print = verboseOutput,
+            gof = gof
+          )
+        else
+          fit_null = amen::ame(
+            DV[[i]],
+            prior = strongPrior_null,
+            R = R,
+            family = family,
+            burn = 0,
+            rvar = rvar,
+            cvar = cvar,
+            dcor = dcor,
+            nvar = nvar,
+            intercept = intercept,
+            symmetric = symmetric,
+            odmax = odmax,
+            seed = seed,
+            nscan = nscan,
+            odens = odens,
+            plot = makePlot,
+            print = verboseOutput,
+            gof = gof
+          )
+
         res_null = append(res_null, c((fit_null$YPM - DV[[i]]) ^ 2))
       }
     }
