@@ -436,7 +436,7 @@ ameMG = function(data,
 
       if (nullModel) {
         #Run null model with input for each team
-        if (odmax_grand)
+        if (is.null(odmax_grand))
           fit_null = amen::ame(
             DV[[i]],
             prior = strongPrior_null,
