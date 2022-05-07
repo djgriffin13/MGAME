@@ -14,32 +14,41 @@ summary.ame_mg <- function(object, ...) {
   tmp <- cbind(
     apply(fit$BETA, 2, mean),
     apply(fit$BETA, 2, sd) ,
-    apply(fit$BETA, 2, mean)+apply(fit$BETA, 2, sd)*qnorm(.025),
-    apply(fit$BETA, 2, mean)+apply(fit$BETA, 2, sd)*qnorm(.025, lower.tail = FALSE),
+    apply(fit$BETA, 2, mean) + apply(fit$BETA, 2, sd) * qnorm(.025),
+    apply(fit$BETA, 2, mean) + apply(fit$BETA, 2, sd) * qnorm(.025, lower.tail = FALSE),
     apply(fit$BETA, 2, mean) / apply(fit$BETA, 2, sd) ,
     2 * (1 - pnorm(abs(
       apply(fit$BETA, 2, mean) / apply(fit$BETA, 2, sd)
     )))
   )
-  colnames(tmp) <- c("pmean", "psd", "CI.low95","CI.up95","z-stat", "p-val")
+  colnames(tmp) <-
+    c("pmean", "psd", "CI.low95", "CI.up95", "z-stat", "p-val")
   cat("\nRegression coefficients:\n")
   print(round(tmp, 3))
 
   cat("\n______________________________________________________\n")
 
-  if (!is.null(fit$GOF)){
+  if (!is.null(fit$GOF)) {
     tmpgof <- apply(fit$GOF, 2, mean)
   }
   if (!is.null(fit$GOF) ||
       !.is.null(fit$R2) || !.is.null(fit$R2_nm))
     cat("\nModel Fit:\n")
   if (!is.null(fit$R2))
-    cat("\n - R^2: ", round(fit$R2, 3), "\nIMPORTANT! This is bisaed for models with additive or multiplicitive random effects.")
+    cat(
+      "\n - R^2: ",
+      round(fit$R2, 3),
+      "\nIMPORTANT! This is bisaed for models with additive or multiplicitive random effects."
+    )
   if (!is.null(fit$R2_nm))
-    cat("\n\n - Psudo R^2: ",round(fit$R2_nm, 3), "\nThis accounts for the random effects and compars the full model to the model with the null model that includes the random effects.\n\n")
+    cat(
+      "\n\n - Psudo R^2: ",
+      round(fit$R2_nm, 3),
+      "\nThis accounts for the random effects and compars the full model to the model with the null model that includes the random effects.\n\n"
+    )
 
   cat("\n - Goodness of fit:\n")
-  if (!is.null(fit$GOF))
+  if (!is.null(fit$GOF)) {
     cat("First Order Structural Fit:\n")
     print(round(tmpgof[1:2], 3))
     cat("\n- - - - - - - - - -\n")
@@ -51,9 +60,13 @@ summary.ame_mg <- function(object, ...) {
     cat("Third Order Structural Fit:\n")
     print(round(tmpgof[4:5], 3))
     cat("\n- - - - - - - - - -\n")
-    if (!is.null(fit$GOF))
-    cat("SSFI = ", round(min(tmpgof), 3), "\nThe Structural Selection Fit Index (SSFI) is the minimun fit index.\n")
 
+    cat(
+      "SSFI = ",
+      round(min(tmpgof), 3),
+      "\nThe Structural Selection Fit Index (SSFI) is the minimun fit index.\n"
+    )
+  }
 
   tmp <- cbind(apply(fit$VC, 2, mean), apply(fit$VC, 2, sd))
   colnames(tmp) <- c("pmean", "psd")
@@ -62,12 +75,14 @@ summary.ame_mg <- function(object, ...) {
   cat("\nVariance parameters:\n")
   print(round(tmp, 3))
 
-  cat("\nLegend:\n",
-      " va  - Ego Random Effect Variance\n",
-      " cab - Ego-Alter Random Effect Covariance\n",
-      " vb  - Alter Random Effect Variance\n",
-      " rho - Dyadic Residual Correlation (a->b compared to b->a)\n",
-      " ve  - Residual Variance")
+  cat(
+    "\nLegend:\n",
+    " va  - Ego Random Effect Variance\n",
+    " cab - Ego-Alter Random Effect Covariance\n",
+    " vb  - Alter Random Effect Variance\n",
+    " rho - Dyadic Residual Correlation (a->b compared to b->a)\n",
+    " ve  - Residual Variance"
+  )
 }
 
 
@@ -86,7 +101,12 @@ getAMEFit <- function(mdl) {
   postGOF = mdl$GOF[-1, ]
   postMeans = colMeans(postGOF)
   observed = abs(observed - postMeans)
-  postGOF = abs(postGOF - matrix(postMeans,nrow = nrow(postGOF), ncol =ncol(postGOF), byrow=TRUE) )
+  postGOF = abs(postGOF - matrix(
+    postMeans,
+    nrow = nrow(postGOF),
+    ncol = ncol(postGOF),
+    byrow = TRUE
+  ))
   return(colSums(postGOF > observed) / nrow(postGOF))
 }
 
@@ -222,48 +242,50 @@ ameMG = function(data,
 
     group_size = length(unique(unlist(c(edges[, 1], edges[, 2]))))
 
-
-    # ### Ego and Alter IV'ss
-    X_ego[[i]] = NULL
-    for (j in 1:length(Xego)) {
-      nodes = dplyr::summarise_(dplyr::group_by_(edges, names(edges)[1]),
-                                paste0("mean(", as.name(Xego[j]), ", na.rm = T)"))
-      if (j > 1)
-        X_ego[[i]] = cbind(X_ego[[i]] , nodes[, 2])
-      else
-        X_ego[[i]] = nodes[, 2]
-    }
-    X_ego[[i]] = array(unlist(X_ego[[i]]), dim = c(group_size, length(Xego)))
-
-
-    X_alter[[i]] = NULL
-    for (j in 1:length(Xego)) {
-      nodes = dplyr::summarise_(dplyr::group_by_(edges, names(edges)[1]),
-                                paste0("mean(", as.name(Xalter[j]), ", na.rm = T)"))
-      if (j > 1)
-        X_alter[[i]] = cbind(X_alter[[i]] , nodes[, 2])
-      else
-        X_alter[[i]] = nodes[, 2]
-    }
-    X_alter[[i]] = array(unlist(X_alter[[i]]), dim = c(group_size, length(Xalter)))
-
-    ### Make team graph object
-    G = igraph::graph.data.frame(edges)
-
     ### Get DV matrix
     DV[[i]] = as.matrix(igraph::get.adjacency(G, attr = Y))
 
+    # ### Ego and Alter IV'ss
+    X_ego[[i]] = NULL
+    if (!is.null(Xego)) {
+      for (j in 1:length(Xego)) {
+        nodes = dplyr::summarise_(dplyr::group_by_(edges, names(edges)[1]),
+                                  paste0("mean(", as.name(Xego[j]), ", na.rm = T)"))
+        if (j > 1)
+          X_ego[[i]] = cbind(X_ego[[i]] , nodes[, 2])
+        else
+          X_ego[[i]] = nodes[, 2]
+      }
+      X_ego[[i]] = array(unlist(X_ego[[i]]), dim = c(group_size, length(Xego)))
+    }
+
+    X_alter[[i]] = NULL
+    if (!is.null(Xalter)) {
+      for (j in 1:length(Xalter)) {
+        nodes = dplyr::summarise_(dplyr::group_by_(edges, names(edges)[1]),
+                                  paste0("mean(", as.name(Xalter[j]), ", na.rm = T)"))
+        if (j > 1)
+          X_alter[[i]] = cbind(X_alter[[i]] , nodes[, 2])
+        else
+          X_alter[[i]] = nodes[, 2]
+      }
+      X_alter[[i]] = array(unlist(X_alter[[i]]), dim = c(group_size, length(Xalter)))
+    }
+    ### Make team graph object
+    G = igraph::graph.data.frame(edges)
+
     ### Dyadic IV's ###
     X_dyad[[i]] =  NULL
-    for (j in 1:length(Xdyad)) {
-      if (j > 1)
-        X_dyad[[i]] = cbind(X_dyad[[i]], as.matrix(igraph::get.adjacency(G, attr = Xdyad[i])))
-      else
-        X_dyad[[i]] = as.matrix(igraph::get.adjacency(G, attr = Xdyad[j]))
+    if (!is.null(Xdyad)) {
+      for (j in 1:length(Xdyad)) {
+        if (j > 1)
+          X_dyad[[i]] = cbind(X_dyad[[i]], as.matrix(igraph::get.adjacency(G, attr = Xdyad[i])))
+        else
+          X_dyad[[i]] = as.matrix(igraph::get.adjacency(G, attr = Xdyad[j]))
+      }
+      X_dyad[[i]] = array(unlist(X_dyad[[i]]), dim = c(group_size, group_size, length(Xdyad)))
     }
-    X_dyad[[i]] = array(unlist(X_dyad[[i]]), dim = c(group_size, group_size, length(Xdyad)))
   }
-
   # R Code: Run models using posterior for each group as prior for next group
 
   # Clear priors
@@ -275,9 +297,18 @@ ameMG = function(data,
     if (is.null(odmax_grand))
       ame_model = amen::ame(
         Y = DV[[i]],
-        Xrow = X_ego[[i]],
-        Xcol = X_alter[[i]],
-        Xdyad = X_dyad[[i]],
+        Xrow = if (is.null(Xego))
+          NULL
+        else
+          X_ego[[i]],
+        Xcol = if (is.null(Xalter))
+          NULL
+        else
+          X_alter[[i]],
+        Xdyad = if (is.null(Xdyad))
+          NULL
+        else
+          X_dyad[[i]],
         R = R,
         prior = prior,
         family = family,
@@ -298,9 +329,18 @@ ameMG = function(data,
     else
       ame_model = amen::ame(
         Y = DV[[i]],
-        Xrow = X_ego[[i]],
-        Xcol = X_alter[[i]],
-        Xdyad = X_dyad[[i]],
+        Xrow = if (is.null(Xego))
+          NULL
+        else
+          X_ego[[i]],
+        Xcol = if (is.null(Xalter))
+          NULL
+        else
+          X_alter[[i]],
+        Xdyad = if (is.null(Xdyad))
+          NULL
+        else
+          X_dyad[[i]],
         R = R,
         prior = prior,
         family = family,
@@ -393,9 +433,18 @@ ameMG = function(data,
       if (is.null(odmax_grand))
         fit_model = amen::ame(
           DV[[i]],
-          Xrow = X_ego[[i]],
-          Xcol = X_alter[[i]],
-          Xdyad = X_dyad[[i]],
+          Xrow = if (is.null(Xego))
+            NULL
+          else
+            X_ego[[i]],
+          Xcol = if (is.null(Xalter))
+            NULL
+          else
+            X_alter[[i]],
+          Xdyad = if (is.null(Xdyad))
+            NULL
+          else
+            X_dyad[[i]],
           prior = strongPrior,
           R = R,
           burn = 0,
@@ -416,9 +465,18 @@ ameMG = function(data,
       else
         fit_model = amen::ame(
           DV[[i]],
-          Xrow = X_ego[[i]],
-          Xcol = X_alter[[i]],
-          Xdyad = X_dyad[[i]],
+          Xrow = if (is.null(Xego))
+            NULL
+          else
+            X_ego[[i]],
+          Xcol = if (is.null(Xalter))
+            NULL
+          else
+            X_alter[[i]],
+          Xdyad = if (is.null(Xdyad))
+            NULL
+          else
+            X_dyad[[i]],
           prior = strongPrior,
           R = R,
           burn = 0,
@@ -510,10 +568,13 @@ ameMG = function(data,
   }
   # R Code: Get model regression parameters and variance components
   colnames(ame_model$BETA) = c("(constant)", Xego, Xalter, Xdyad)
-  colnames(ame_model$GOF) = c("Ego", "Alter", "Reciprocity", "Cycle Closure", "Transitivity")
+  colnames(ame_model$GOF) = c("Ego",
+                              "Alter",
+                              "Reciprocity",
+                              "Cycle Closure",
+                              "Transitivity")
 
   class(ame_model) <- "ame_mg"
 
   return(ame_model)
 }
-
