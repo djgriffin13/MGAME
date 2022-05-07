@@ -14,19 +14,22 @@ summary.ame_mg <- function(object, ...) {
   tmp <- cbind(
     apply(fit$BETA, 2, mean),
     apply(fit$BETA, 2, sd) ,
+    apply(fit$BETA, 2, mean)+apply(fit$BETA, 2, sd)*qnorm(.025),
+    apply(fit$BETA, 2, mean)+apply(fit$BETA, 2, sd)*qnorm(.025, lower.tail = FALSE),
     apply(fit$BETA, 2, mean) / apply(fit$BETA, 2, sd) ,
     2 * (1 - pnorm(abs(
       apply(fit$BETA, 2, mean) / apply(fit$BETA, 2, sd)
     )))
   )
-  colnames(tmp) <- c("pmean", "psd", "z-stat", "p-val")
+  colnames(tmp) <- c("pmean", "psd", "CI.low95","CI.up95","z-stat", "p-val")
   cat("\nRegression coefficients:\n")
   print(round(tmp, 3))
 
   cat("\n______________________________________________________\n")
 
-  if (!is.null(fit$GOF))
+  if (!is.null(fit$GOF)){
     tmpgof <- apply(fit$GOF, 2, mean)
+  }
   if (!is.null(fit$GOF) ||
       !.is.null(fit$R2) || !.is.null(fit$R2_nm))
     cat("\nModel Fit:\n")
@@ -35,11 +38,21 @@ summary.ame_mg <- function(object, ...) {
   if (!is.null(fit$R2_nm))
     cat("\n\n - Psudo R^2: ",round(fit$R2_nm, 3), "\nThis accounts for the random effects and compars the full model to the model with the null model that includes the random effects.\n\n")
 
-  cat("\n - Badness of fit:\n")
+  cat("\n - Goodness of fit:\n")
   if (!is.null(fit$GOF))
-    print(round(tmpgof, 3))
-  if (!is.null(fit$GOF))
-    cat("Minimum index fit:", round(min(tmpgof), 3), "\n")
+    cat("First Order Structural Fit:\n")
+    print(round(tmpgof[1:2], 3))
+    cat("\n- - - - - - - - - -\n")
+
+    cat("Second Order Structural Fit:\n")
+    print(round(tmpgof[3], 3))
+    cat("\n- - - - - - - - - -\n")
+
+    cat("Third Order Structural Fit:\n")
+    print(round(tmpgof[4:5], 3))
+    cat("\n- - - - - - - - - -\n")
+    if (!is.null(fit$GOF))
+    cat("SSFI = ", round(min(tmpgof), 3), "\nThe Structural Selection Fit Index (SSFI) is the minimun fit index.\n")
 
 
   tmp <- cbind(apply(fit$VC, 2, mean), apply(fit$VC, 2, sd))
@@ -73,7 +86,7 @@ getAMEFit <- function(mdl) {
   postGOF = mdl$GOF[-1, ]
   postMeans = colMeans(postGOF)
   observed = abs(observed - postMeans)
-  postGOF = abs(postGOF - postMeans)
+  postGOF = abs(postGOF - matrix(postMeans,nrow = nrow(postGOF), ncol =ncol(postGOF), byrow=TRUE) )
   return(colSums(postGOF > observed) / nrow(postGOF))
 }
 
@@ -427,7 +440,6 @@ ameMG = function(data,
 
       # Record goodness of fit information
       GOFPost[i, ] = getAMEFit(fit_model)
-      colnames(GOFPost) = colnames(ame_model$GOF)
 
       # Record Residuals
       residuals = append(residuals, c((fit_model$YPM - DV[[i]]) ^ 2))
@@ -485,7 +497,6 @@ ameMG = function(data,
     if (modelFitTest) {
       # Calculate Goodness of fit
       ame_model$GOF = GOFPost
-      ame_model$GOF_OBT = colMeans(GOFPost)
 
       # Calculate basic R^2: variance explained by the full model over the intercept only model
       r2 = 1 - sum(residuals, na.rm = TRUE) / sum(avgResiduals, na.rm = TRUE)
@@ -499,8 +510,10 @@ ameMG = function(data,
   }
   # R Code: Get model regression parameters and variance components
   colnames(ame_model$BETA) = c("(constant)", Xego, Xalter, Xdyad)
+  colnames(ame_model$GOF) = c("Ego", "Alter", "Reciprocity", "Cycle Closure", "Transitivity")
 
   class(ame_model) <- "ame_mg"
 
   return(ame_model)
 }
+
