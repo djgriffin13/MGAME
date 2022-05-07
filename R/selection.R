@@ -26,29 +26,28 @@ summary.ame_mg <- function(object, ...) {
   cat("\nRegression coefficients:\n")
   print(round(tmp, 3))
 
-  cat("\n______________________________________________________\n")
 
-  if (!is.null(fit$GOF)) {
+  if (fit$FitOptions[1]) {
+    cat("\n______________________________________________________\n")
     tmpgof <- apply(fit$GOF, 2, mean)
   }
-  if (!is.null(fit$GOF) ||
-      !.is.null(fit$R2) || !.is.null(fit$R2_nm))
+  if (fit$FitOptions[1]) {
     cat("\nModel Fit:\n")
-  if (!is.null(fit$R2))
     cat(
       "\n - R^2: ",
       round(fit$R2, 3),
       "\nIMPORTANT! This is bisaed for models with additive or multiplicitive random effects."
     )
-  if (!is.null(fit$R2_nm))
+  }
+  if (fit$FitOptions[1] && fit$FitOptions[2])
     cat(
       "\n\n - Psudo R^2: ",
       round(fit$R2_nm, 3),
       "\nThis accounts for the random effects and compars the full model to the model with the null model that includes the random effects.\n\n"
     )
 
-  cat("\n - Goodness of fit:\n")
-  if (!is.null(fit$GOF)) {
+  if (fit$FitOptions[1] && fit$FitOptions[3]) {
+    cat("\n - Goodness of fit:\n")
     cat("First Order Structural Fit:\n")
     print(round(tmpgof[1:2], 3))
     cat("\n- - - - - - - - - -\n")
@@ -97,8 +96,8 @@ summary.ame_mg <- function(object, ...) {
 #' @param mdl output from ame models of class ame
 #' @return a vector of porportions
 getAMEFit <- function(mdl) {
-  observed = mdl$GOF[1, ]
-  postGOF = mdl$GOF[-1, ]
+  observed = mdl$GOF[1,]
+  postGOF = mdl$GOF[-1,]
   postMeans = colMeans(postGOF)
   observed = abs(observed - postMeans)
   postGOF = abs(postGOF - matrix(
@@ -297,18 +296,9 @@ ameMG = function(data,
     if (is.null(odmax_grand))
       ame_model = amen::ame(
         Y = DV[[i]],
-        Xrow = if (is.null(Xego))
-          NULL
-        else
-          X_ego[[i]],
-        Xcol = if (is.null(Xalter))
-          NULL
-        else
-          X_alter[[i]],
-        Xdyad = if (is.null(Xdyad))
-          NULL
-        else
-          X_dyad[[i]],
+        Xrow  = if (is.null(Xego))   NULL else X_ego[[i]],
+        Xcol  = if (is.null(Xalter)) NULL else X_alter[[i]],
+        Xdyad = if (is.null(Xdyad))  NULL else X_dyad[[i]],
         R = R,
         prior = prior,
         family = family,
@@ -329,18 +319,9 @@ ameMG = function(data,
     else
       ame_model = amen::ame(
         Y = DV[[i]],
-        Xrow = if (is.null(Xego))
-          NULL
-        else
-          X_ego[[i]],
-        Xcol = if (is.null(Xalter))
-          NULL
-        else
-          X_alter[[i]],
-        Xdyad = if (is.null(Xdyad))
-          NULL
-        else
-          X_dyad[[i]],
+        Xrow  = if (is.null(Xego))   NULL else X_ego[[i]],
+        Xcol  = if (is.null(Xalter)) NULL else X_alter[[i]],
+        Xdyad = if (is.null(Xdyad))  NULL else X_dyad[[i]],
         R = R,
         prior = prior,
         family = family,
@@ -433,18 +414,9 @@ ameMG = function(data,
       if (is.null(odmax_grand))
         fit_model = amen::ame(
           DV[[i]],
-          Xrow = if (is.null(Xego))
-            NULL
-          else
-            X_ego[[i]],
-          Xcol = if (is.null(Xalter))
-            NULL
-          else
-            X_alter[[i]],
-          Xdyad = if (is.null(Xdyad))
-            NULL
-          else
-            X_dyad[[i]],
+          Xrow  = if (is.null(Xego))   NULL else X_ego[[i]],
+          Xcol  = if (is.null(Xalter)) NULL else X_alter[[i]],
+          Xdyad = if (is.null(Xdyad))  NULL else X_dyad[[i]],
           prior = strongPrior,
           R = R,
           burn = 0,
@@ -465,18 +437,9 @@ ameMG = function(data,
       else
         fit_model = amen::ame(
           DV[[i]],
-          Xrow = if (is.null(Xego))
-            NULL
-          else
-            X_ego[[i]],
-          Xcol = if (is.null(Xalter))
-            NULL
-          else
-            X_alter[[i]],
-          Xdyad = if (is.null(Xdyad))
-            NULL
-          else
-            X_dyad[[i]],
+          Xrow  = if (is.null(Xego))   NULL else X_ego[[i]],
+          Xcol  = if (is.null(Xalter)) NULL else X_alter[[i]],
+          Xdyad = if (is.null(Xdyad))  NULL else X_dyad[[i]],
           prior = strongPrior,
           R = R,
           burn = 0,
@@ -497,7 +460,7 @@ ameMG = function(data,
         )
 
       # Record goodness of fit information
-      GOFPost[i, ] = getAMEFit(fit_model)
+      GOFPost[i,] = getAMEFit(fit_model)
 
       # Record Residuals
       residuals = append(residuals, c((fit_model$YPM - DV[[i]]) ^ 2))
@@ -567,12 +530,19 @@ ameMG = function(data,
     }
   }
   # R Code: Get model regression parameters and variance components
-  colnames(ame_model$BETA) = c("(constant)", Xego, Xalter, Xdyad)
+  colnames(ame_model$BETA) = c(
+    "(constant)",
+    paste0(Xego, "_(ego)"),
+    paste0(Xalter, "_(alter)"),
+    paste0(Xdyad, "_(dyad)")
+  )
   colnames(ame_model$GOF) = c("Ego",
                               "Alter",
                               "Reciprocity",
                               "Cycle Closure",
                               "Transitivity")
+
+  ame_model$FitOptions = c(modelFitTest, nullModel, gof)
 
   class(ame_model) <- "ame_mg"
 
