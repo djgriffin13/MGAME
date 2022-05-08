@@ -36,12 +36,12 @@ summary.ame_mg <- function(object, ...) {
     cat(
       "\n - R^2: ",
       round(fit$R2, 3),
-      "\nIMPORTANT! This is bisaed for models with additive or multiplicitive random effects."
+      "\nIMPORTANT! This is bisaed for models with additive or multiplicitive random effects.\n"
     )
   }
   if (fit$FitOptions[1] && fit$FitOptions[2])
     cat(
-      "\n\n - Psudo R^2: ",
+      "\n - Psudo R^2: ",
       round(fit$R2_nm, 3),
       "\nThis accounts for the random effects and compars the full model to the model with the null model that includes the random effects.\n\n"
     )
@@ -124,15 +124,8 @@ getAMEFit <- function(mdl) {
 #' @return a list of hyperparamters used as a prior by the ame model
 getPrior <-
   function(mdl,
-           lastPrior = list(),
            strong = F,
            strongFactor = 1000000) {
-    if (length(lastPrior) == 0) {
-      lastPrior = list()
-      lastPrior$nu0 = 0
-      lastPrior$kappa0 = 0
-      lastPrior$eta0 = 0
-    }
 
     prior = list()
 
@@ -146,21 +139,17 @@ getPrior <-
     #Corilation table for additive effects
     VC_means = colMeans(mdl$VC)
     prior$Sab0 = matrix(c(VC_means[1], VC_means[2], VC_means[2], VC_means[3]), nrow = 2)
-    #Degrees of Freedom table for multiplicative effects
-    prior$eta0 = length(mdl$APM) + lastPrior$eta0
-
+    #Degrees of Freedom table for additive effects (i.e., prior$eta0) set by defaults.
 
     ### Dyad Effects ###
     #Dyadic variance
     prior$s20 = mean(mdl$VC[, "ve"], na.rm = T)
-    #DF for dyadic variance
-    prior$nu0 = nrow(mdl$VC) + lastPrior$nu0
+    #DF for dyadic variance (i.e., prior$nu0) set by defaults
 
     ### Multiplicative Effects ###
     #Corilation table for multiplicative effects
     prior$Suv0 = var(cbind(mdl$U, mdl$V))
-    #Degrees of Freedom table for multiplicative effects
-    prior$kappa0 = nrow(mdl$U) + lastPrior$kappa0
+    #Degrees of Freedom table for multiplicative effects (i.e., prior$kappa0) set by defaults.
 
 
     # Strong Prior
@@ -341,7 +330,7 @@ ameMG = function(data,
         gof = gof
       )
 
-    prior = getPrior(ame_model, prior)
+    prior = getPrior(ame_model)
 
     if (nullModel && modelFitTest) {
       # Run null (Excluding all X's) model used to calculate R^2
@@ -387,7 +376,7 @@ ameMG = function(data,
           gof = gof
         )
 
-      null_prior = getPrior(null_model, null_prior)
+      null_prior = getPrior(null_model)
     }
 
     # Get prior from output posterior distributions
