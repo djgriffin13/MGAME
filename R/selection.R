@@ -230,8 +230,26 @@ ameMG = function(data,
 
     group_size = length(unique(unlist(c(edges[, 1], edges[, 2]))))
 
+    ### Make team graph object
+    dyadMins = rep(NA, length(Xdyad) + 1)
+    if (!is.null(Xdyad)) {
+      for (j in 1:length(Xdyad)) {
+        col = Xdyad[j]
+        dyadMins[j] = min(edges[, col])
+        edges[, col] = edges[, col] - min(edges[, col]) + 1
+      }
+    }
+    dyadMins[length(Xdyad) + 1] = min(edges[, Y])
+    edges[, Y] = edges[, Y] - min(edges[, Y]) + 1
+
+
+    G = igraph::graph.data.frame(edges)
+
     ### Get DV matrix
-    DV[[i]] = as.matrix(igraph::get.adjacency(G, attr = Y))
+    M = as.matrix(igraph::get.adjacency(G, attr = Y))
+    M[M == 0] <- NA
+    M = M - 1 + dyadMins[j]
+    DV[[i]] = M
 
     # ### Ego and Alter IV'ss
     X_ego[[i]] = NULL
@@ -259,17 +277,18 @@ ameMG = function(data,
       }
       X_alter[[i]] = array(unlist(X_alter[[i]]), dim = c(group_size, length(Xalter)))
     }
-    ### Make team graph object
-    G = igraph::graph.data.frame(edges)
 
     ### Dyadic IV's ###
     X_dyad[[i]] =  NULL
     if (!is.null(Xdyad)) {
       for (j in 1:length(Xdyad)) {
+        M = as.matrix(igraph::get.adjacency(G, attr = Xdyad[i]))
+        M[M == 0] <- NA
+        M = M - 1 + dyadMins[j]
         if (j > 1)
-          X_dyad[[i]] = cbind(X_dyad[[i]], as.matrix(igraph::get.adjacency(G, attr = Xdyad[i])))
+          X_dyad[[i]] = cbind(X_dyad[[i]], M)
         else
-          X_dyad[[i]] = as.matrix(igraph::get.adjacency(G, attr = Xdyad[j]))
+          X_dyad[[i]] = M
       }
       X_dyad[[i]] = array(unlist(X_dyad[[i]]), dim = c(group_size, group_size, length(Xdyad)))
     }
