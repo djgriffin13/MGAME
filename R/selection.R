@@ -580,9 +580,9 @@ mgame = function(data,
   # R Code: Get model regression parameters and variance components
   colnames(ame_model$BETA) = c(
     "(constant)",
-    paste0(Xego, "_(ego)"),
-    paste0(Xalter, "_(alter)"),
-    paste0(Xdyad, "_(dyad)")
+    if(!is.null(Xego)) paste0(Xego, "_(ego)"),
+    if(!is.null(Xalter)) paste0(Xalter, "_(alter)"),
+    if(!is.null(Xdyad))paste0(Xdyad, "_(dyad)")
   )
   colnames(ame_model$GOF) = c("Ego",
                               "Alter",
