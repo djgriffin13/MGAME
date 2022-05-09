@@ -184,7 +184,7 @@ getPrior <-
 #' @param makePlot generate plots as models are running or not
 #' @return a list of the class ame_mg which describes the posterior distribution
 #' @export
-ameMG = function(data,
+mgame = function(data,
                  Y,
                  group,
                  Xdyad = NULL,
@@ -207,19 +207,25 @@ ameMG = function(data,
                  nullModel = TRUE,
                  gof = TRUE,
                  prior = list(),
-                 verboseOutput = TRUE,
+                 verboseOutput = FALSE,
                  makePlot = FALSE) {
+  cat("Running multi-group additive multiplicative effects network model.\n
+      This may take a few minutes...")
   # R Code: Structure Data by groups
 
   # Get the list of all groups in the data
   groups = unique(data[[group]])
-
+  pb <- txtProgressBar(max = length(groups)*(1 + modelFitTest + 2 * modelFitTest * nullModel),style = 3)
+  progressIndex = 0
+  w = getOption("width")
   # Initialize the places DV and IV's will be stored
   DV = list()
   X_ego = list()
   X_alter = list()
   X_dyad = list()
 
+  cat("\r",rep(" ", w),sep = "")
+  cat("\rLoading / Formating Data...\n")
   # For loop repeats following code for each team
   for (i in 1:length(groups)) {
     # Filter data for the ith team
@@ -310,8 +316,12 @@ ameMG = function(data,
   null_prior = prior
 
   # Run code for each team
+  cat("Running Models...\n\n")
   for (i in 1:length(groups)) {
     # Run Model:
+    cat("\r",rep(" ", w),sep = "")
+    cat("\r -  Running main ame model for Group",i,"\n")
+    setTxtProgressBar(pb, progressIndex+.1)
     if (is.null(odmax_grand))
       ame_model = amen::ame(
         Y = DV[[i]],
@@ -359,10 +369,14 @@ ameMG = function(data,
         print = verboseOutput,
         gof = gof
       )
-
+    progressIndex = progressIndex + 1
     prior = getPrior(ame_model)
 
     if (nullModel && modelFitTest) {
+      cat("\r",rep(" ", w),sep = "")
+      cat("\r -  Running null ame model for comparison for Group:",i,"\n")
+      setTxtProgressBar(pb, progressIndex)
+      
       # Run null (Excluding all X's) model used to calculate R^2
       if (is.null(odmax_grand))
         null_model = amen::ame(
@@ -405,7 +419,7 @@ ameMG = function(data,
           print = verboseOutput,
           gof = gof
         )
-
+      progressIndex = progressIndex + 1
       null_prior = getPrior(null_model)
     }
 
@@ -427,9 +441,15 @@ ameMG = function(data,
 
   # Loop through all groups again, but always using the same strong prior so that the model
   # give us residuals and fit information but doesn't update
+  cat("\r",rep(" ", w),sep = "")
+  cat("\nCalculating  Model Fit and Structural Fit...\n")
   if (modelFitTest) {
     for (i in 1:length(groups)) {
       #Run model with input for each team
+      cat("\r",rep(" ", w),sep = "")
+      cat("\r -  Main fit for group:",i,"\n")
+      setTxtProgressBar(pb, progressIndex)
+      
       if (is.null(odmax_grand))
         fit_model = amen::ame(
           DV[[i]],
@@ -477,7 +497,8 @@ ameMG = function(data,
           print = verboseOutput,
           gof = gof
         )
-
+      progressIndex = progressIndex + 1
+      
       # Record goodness of fit information
       GOFPost[i,] = getAMEFit(fit_model)
 
@@ -487,6 +508,10 @@ ameMG = function(data,
                                               2))
 
       if (nullModel) {
+        cat("\r",rep(" ", w),sep = "")
+        cat("\r -  Null model fit for group:",i,"\n")
+        setTxtProgressBar(pb, progressIndex)
+        
         #Run null model with input for each team
         if (is.null(odmax_grand))
           fit_null = amen::ame(
@@ -530,10 +555,14 @@ ameMG = function(data,
             gof = gof
           )
 
+        progressIndex = progressIndex + 1
         res_null = append(res_null, c((fit_null$YPM - DV[[i]]) ^ 2))
       }
     }
-
+    cat("\r",rep(" ", w),sep = "")
+    cat("\rFinalizing Results...\n")
+    setTxtProgressBar(pb, progressIndex)
+    
     if (modelFitTest) {
       # Calculate Goodness of fit
       ame_model$GOF = GOFPost
@@ -567,3 +596,4 @@ ameMG = function(data,
 
   return(ame_model)
 }
+
