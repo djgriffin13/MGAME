@@ -231,9 +231,11 @@ mgame = function(data,
     # Filter data for the ith team
     g = groups[i]
 
+    defaultW <- getOption("warn")
+    options(warn = -1)
     edges = dplyr::filter_(data, lazyeval::interp(quote(x == y), x = as.name(group), y =
-                                                    g))
-
+                                                  g))
+    options(warn = defaultW)
     id_list = unique(unlist(edges[,1:2]))
     group_size = length(id_list)
     id_df = data.frame(id_list)
@@ -266,8 +268,11 @@ mgame = function(data,
       temp_edges = dplyr::full_join(edges,id_df, by = names(id_df))
 
       for (j in 1:length(Xego)) {
+        defaultW <- getOption("warn")
+        options(warn = -1)
         nodes = dplyr::summarise_(dplyr::group_by_(temp_edges, names(edges)[1]),
                                   paste0("mean(", as.name(Xego[j]), ", na.rm = T)"))
+        options(warn = defaultW)
         nodes = dplyr::arrange(nodes,by_group =TRUE)
         if (j > 1)
           X_ego[[i]] = cbind(X_ego[[i]] , nodes[, 2])
@@ -283,8 +288,11 @@ mgame = function(data,
       temp_edges = dplyr::full_join(edges,id_df, by = names(id_df))
 
       for (j in 1:length(Xalter)) {
+        defaultW <- getOption("warn")
+        options(warn = -1)
         nodes = dplyr::summarise_(dplyr::group_by_(temp_edges, names(edges)[2]),
                                   paste0("mean(", as.name(Xalter[j]), ", na.rm = T)"))
+        options(warn = defaultW)
         nodes = dplyr::arrange(nodes,by_group =TRUE)
         if (j > 1)
           X_alter[[i]] = cbind(X_alter[[i]] , nodes[, 2])
