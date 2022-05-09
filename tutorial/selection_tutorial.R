@@ -27,6 +27,5 @@ fit = mgame(
   family = "nrm"
 )
 
-
 # Get Rresults
 summary(fit)
