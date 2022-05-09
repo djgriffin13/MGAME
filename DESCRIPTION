@@ -1,5 +1,5 @@
-Package: isNet
-Title: What the Package Does (One Line, Title Case)
+Package: MGAME
+Title: Multi-Group Additive Multiplicitive Effects Models for Network Selection Processes 
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Daniel",
