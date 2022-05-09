@@ -215,7 +215,7 @@ mgame = function(data,
 
   # Get the list of all groups in the data
   groups = unique(data[[group]])
-  pb <- tcltk::txtProgressBar(max = length(groups)*(1 + modelFitTest + 2 * modelFitTest * nullModel),style = 3)
+  pb <- txtProgressBar(max = length(groups)*(1 + modelFitTest + 2 * modelFitTest * nullModel),style = 3)
   progressIndex = 0
   w = getOption("width")
   # Initialize the places DV and IV's will be stored
@@ -321,7 +321,7 @@ mgame = function(data,
     # Run Model:
     cat("\r",rep(" ", w),sep = "")
     cat("\r -  Running main ame model for Group",i,"\n")
-    tcltk::setTxtProgressBar(pb, progressIndex+.1)
+    setTxtProgressBar(pb, progressIndex+.1)
     if (is.null(odmax_grand))
       ame_model = amen::ame(
         Y = DV[[i]],
@@ -375,7 +375,7 @@ mgame = function(data,
     if (nullModel && modelFitTest) {
       cat("\r",rep(" ", w),sep = "")
       cat("\r -  Running null ame model for comparison for Group:",i,"\n")
-      tcltk::setTxtProgressBar(pb, progressIndex)
+      setTxtProgressBar(pb, progressIndex)
       
       # Run null (Excluding all X's) model used to calculate R^2
       if (is.null(odmax_grand))
@@ -448,7 +448,7 @@ mgame = function(data,
       #Run model with input for each team
       cat("\r",rep(" ", w),sep = "")
       cat("\r -  Main fit for group:",i,"\n")
-      tcltk::setTxtProgressBar(pb, progressIndex)
+      setTxtProgressBar(pb, progressIndex)
       
       if (is.null(odmax_grand))
         fit_model = amen::ame(
@@ -510,7 +510,7 @@ mgame = function(data,
       if (nullModel) {
         cat("\r",rep(" ", w),sep = "")
         cat("\r -  Null model fit for group:",i,"\n")
-        tcltk::setTxtProgressBar(pb, progressIndex)
+        setTxtProgressBar(pb, progressIndex)
         
         #Run null model with input for each team
         if (is.null(odmax_grand))
@@ -561,7 +561,7 @@ mgame = function(data,
     }
     cat("\r",rep(" ", w),sep = "")
     cat("\rFinalizing Results...\n")
-    tcltk::setTxtProgressBar(pb, progressIndex)
+    setTxtProgressBar(pb, progressIndex)
     
     if (modelFitTest) {
       # Calculate Goodness of fit
