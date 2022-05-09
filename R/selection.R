@@ -298,7 +298,7 @@ mgame = function(data,
     X_dyad[[i]] =  NULL
     if (!is.null(Xdyad)) {
       for (j in 1:length(Xdyad)) {
-        M = as.matrix(igraph::get.adjacency(G, attr = Xdyad[i]))
+        M = as.matrix(igraph::get.adjacency(G, attr = Xdyad[j]))
         M[M == 0] <- NA
         M = M - 1 + dyadMins[j]
         M = M[order(id_list), order(id_list)]
