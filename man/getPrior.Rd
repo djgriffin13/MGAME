@@ -4,12 +4,10 @@
 \alias{getPrior}
 \title{Get a Prior for a posterior}
 \usage{
-getPrior(mdl, lastPrior = list(), strong = F, strongFactor = 1e+06)
+getPrior(mdl, strong = F, strongFactor = 1e+06)
 }
 \arguments{
 \item{mdl}{output from ame models of class ame}
-
-\item{lastPrior}{previous prior used for tracking degrees of freedom}
 
 \item{strong}{booliean value indicating weather to treat this as a
 stribg prior by reducing the variance in beta and increasing the degrees
@@ -17,6 +15,8 @@ of freedom}
 
 \item{strongFactor}{value indicating the factor used to augment prior to make it
 a strong prior.}
+
+\item{lastPrior}{previous prior used for tracking degrees of freedom}
 }
 \value{
 a list of hyperparamters used as a prior by the ame model
