@@ -228,7 +228,9 @@ ameMG = function(data,
     edges = dplyr::filter_(data, lazyeval::interp(quote(x == y), x = as.name(group), y =
                                                     g))
 
-    group_size = length(unique(unlist(c(edges[, 1], edges[, 2]))))
+    id_list = unique(unlist(edges[,1:2]))
+    group_size = length(id_list)
+    id_df = data.frame(id_list)
 
     ### Make team graph object
     dyadMins = rep(NA, length(Xdyad) + 1)
@@ -254,9 +256,13 @@ ameMG = function(data,
     # ### Ego and Alter IV'ss
     X_ego[[i]] = NULL
     if (!is.null(Xego)) {
+      names(id_df) = names(edges)[1]
+      temp_edges = dplyr::full_join(edges,id_df, by = names(id_df))
+
       for (j in 1:length(Xego)) {
-        nodes = dplyr::summarise_(dplyr::group_by_(edges, names(edges)[1]),
+        nodes = dplyr::summarise_(dplyr::group_by_(temp_edges, names(edges)[1]),
                                   paste0("mean(", as.name(Xego[j]), ", na.rm = T)"))
+        nodes = dplyr::arrange(nodes,by_group =TRUE)
         if (j > 1)
           X_ego[[i]] = cbind(X_ego[[i]] , nodes[, 2])
         else
@@ -267,9 +273,13 @@ ameMG = function(data,
 
     X_alter[[i]] = NULL
     if (!is.null(Xalter)) {
+      names(id_df) = names(edges)[2]
+      temp_edges = dplyr::full_join(edges,id_df, by = names(id_df))
+
       for (j in 1:length(Xalter)) {
-        nodes = dplyr::summarise_(dplyr::group_by_(edges, names(edges)[1]),
+        nodes = dplyr::summarise_(dplyr::group_by_(temp_edges, names(edges)[2]),
                                   paste0("mean(", as.name(Xalter[j]), ", na.rm = T)"))
+        nodes = dplyr::arrange(nodes,by_group =TRUE)
         if (j > 1)
           X_alter[[i]] = cbind(X_alter[[i]] , nodes[, 2])
         else
@@ -285,6 +295,7 @@ ameMG = function(data,
         M = as.matrix(igraph::get.adjacency(G, attr = Xdyad[i]))
         M[M == 0] <- NA
         M = M - 1 + dyadMins[j]
+        M = M[order(id_list), order(id_list)]
         if (j > 1)
           X_dyad[[i]] = cbind(X_dyad[[i]], M)
         else
