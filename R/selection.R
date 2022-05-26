@@ -1,7 +1,7 @@
 #' Summary of a multi group AME object
 #'
 #' Summary method for a multi group AME object. This is adapted from
-#' Peter Hoff's work for ame class
+#' Peter Hoff's work for ame class ([amen::summary.ame])
 #'
 #' @param object the output from an ameMG function
 #' @param ... unused
@@ -167,8 +167,9 @@ getPrior <-
 
 #' Multi Group AME model
 #'
-#' This function runs the ame model for a multi group setting
-#' it also calculates fit statistics and variance explained by
+#' This function runs the ame [amen::ame()] model for a multi group setting.
+#' See amen documentation for complete list of parameters.
+#' It also calculates fit statistics and variance explained by
 #' the model.
 #'
 #' @param data a data frame in person parwise structure
@@ -182,6 +183,8 @@ getPrior <-
 #' and multiplicitive effects to calculate unique varinace explained by fixed effects.
 #' @param verboseOutput print ame model out put or not
 #' @param makePlot generate plots as models are running or not
+#' @param group_standard a list of strings corrisponding to columns in data to be group-standardized
+#' @param grand_standard a list of strings corrisponding to columns in data to be grand-standardized
 #' @return a list of the class ame_mg which describes the posterior distribution
 #' @export
 mgame = function(data,

@@ -29,7 +29,9 @@ mgame(
   gof = TRUE,
   prior = list(),
   verboseOutput = FALSE,
-  makePlot = FALSE
+  makePlot = FALSE,
+  group_standard = NULL,
+  grand_standard = NULL
 )
 }
 \arguments{
@@ -52,12 +54,17 @@ and multiplicitive effects to calculate unique varinace explained by fixed effec
 \item{verboseOutput}{print ame model out put or not}
 
 \item{makePlot}{generate plots as models are running or not}
+
+\item{group_standard}{a list of strings corrisponding to columns in data to be group-standardized}
+
+\item{grand_standard}{a list of strings corrisponding to columns in data to be grand-standardized}
 }
 \value{
 a list of the class ame_mg which describes the posterior distribution
 }
 \description{
-This function runs the ame model for a multi group setting
-it also calculates fit statistics and variance explained by
+This function runs the ame \code{\link[amen:ame]{amen::ame()}} model for a multi group setting.
+See amen documentation for complete list of parameters.
+It also calculates fit statistics and variance explained by
 the model.
 }

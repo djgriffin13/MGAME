@@ -7,13 +7,13 @@ Authors@R:
            role = c("aut", "cre"),
            email = "danieljgriffin618@gmail.com",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Description: This package calcualtes multi-group additive multiplicitive effects models. This is set up as a tool to make Hoff's amen package more usable by handeling the data formating, and the multi-group logic.
 Imports:
-    readr,
-    dplyr,
-    amen,
-    lazyeval,
-    igraph
+    readr (>= 1.4.0),
+    dplyr (>= 1.0.8),
+    amen (>= 1.4.4),
+    lazyeval (>= 0.2.0),
+    igraph (>= 1.2.0)
 License: `use_mit_license()`, `use_gpl3_license()` or friends to
     pick a license
 Encoding: UTF-8

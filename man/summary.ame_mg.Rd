@@ -16,7 +16,7 @@ a summary of parameter estimates and confidence intervals for a multi-group AME
 }
 \description{
 Summary method for a multi group AME object. This is adapted from
-Peter Hoff's work for ame class
+Peter Hoff's work for ame class (\link[amen:summary.ame]{amen::summary.ame})
 }
 \author{
 Daniel Griffin
