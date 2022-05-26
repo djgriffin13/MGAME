@@ -208,7 +208,9 @@ mgame = function(data,
                  gof = TRUE,
                  prior = list(),
                  verboseOutput = FALSE,
-                 makePlot = FALSE) {
+                 makePlot = FALSE,
+                 group_standard = NULL,
+                 grand_standard = NULL) {
   cat("Running multi-group additive multiplicative effects network model.\n
       This may take a few minutes...")
   # R Code: Structure Data by groups
@@ -226,6 +228,13 @@ mgame = function(data,
 
   cat("\r",rep(" ", w),sep = "")
   cat("\rLoading / Formating Data...\n")
+  
+  if (!is.null(grand_standard)) {
+    for (col in grand_standard) {
+      data[, col] = scale(data[, col])
+    }
+  }
+  
   # For loop repeats following code for each team
   for (i in 1:length(groups)) {
     # Filter data for the ith team
@@ -239,6 +248,12 @@ mgame = function(data,
     id_list = unique(unlist(edges[,1:2]))
     group_size = length(id_list)
     id_df = data.frame(id_list)
+    
+    if (!is.null(group_standard)) {
+      for (col in group_standard) {
+        data[, col] = scale(data[, col])
+      }
+    }
 
     ### Make team graph object
     dyadMins = rep(NA, length(Xdyad) + 1)
