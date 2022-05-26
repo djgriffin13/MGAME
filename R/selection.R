@@ -185,7 +185,8 @@ getPrior <-
 #' @param makePlot generate plots as models are running or not
 #' @param group_standard a list of strings corrisponding to columns in data to be group-standardized
 #' @param grand_standard a list of strings corrisponding to columns in data to be grand-standardized
-#' @return a list of the class ame_mg which describes the posterior distribution
+#' @param ... See [amen::ame()] for details
+#' @return An object of the class "ame_mg" which records the posterior distribution
 #' @export
 mgame = function(data,
                  Y,

@@ -1,9 +1,8 @@
 # Install and Load Library
-
 # If devtools is not already installed
 # it allows you to install MGAME from github directly
 install.packages("devtools")
-devtools::install_github("djgriffin13/MGAME")
+devtools::install_github("djgriffin13/MGAME", upgrade = "never")
 library(MGAME)
 
 # Load Data

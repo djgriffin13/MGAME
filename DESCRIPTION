@@ -1,12 +1,12 @@
 Package: MGAME
 Title: Multi-Group Additive Multiplicitive Effects Models for Network Selection Processes 
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R: 
     person(given = "Daniel",
            family = "Griffin",
            role = c("aut", "cre"),
            email = "danieljgriffin618@gmail.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = https://orcid.org/0000-0001-5093-3536"))
 Description: This package calcualtes multi-group additive multiplicitive effects models. This is set up as a tool to make Hoff's amen package more usable by handeling the data formating, and the multi-group logic.
 Imports:
     readr (>= 1.4.0),

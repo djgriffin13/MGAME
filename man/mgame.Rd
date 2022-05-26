@@ -58,9 +58,11 @@ and multiplicitive effects to calculate unique varinace explained by fixed effec
 \item{group_standard}{a list of strings corrisponding to columns in data to be group-standardized}
 
 \item{grand_standard}{a list of strings corrisponding to columns in data to be grand-standardized}
+
+\item{...}{See \code{\link[amen:ame]{amen::ame()}} for details}
 }
 \value{
-a list of the class ame_mg which describes the posterior distribution
+An object of the class "ame_mg" which records the posterior distribution
 }
 \description{
 This function runs the ame \code{\link[amen:ame]{amen::ame()}} model for a multi group setting.
