@@ -2,7 +2,9 @@
 install.packages("tidyverse")
 library(tidyverse)
 
-# Import Data
+# Load Data
+# Must set path to local directory where the data is stored
+# Click: Session > Set Working Directory > Choose Directory...
 edge = read_csv("./data/edge_influence.csv")
 node = read_csv("./data/node_influence.csv")
 
