@@ -1,28 +1,31 @@
-# Install needed packages
+# Import Packages
 install.packages("tidyverse")
-
-# R Code: Load data
 library(tidyverse)
-edge = read_csv("./tutorial/data/edge_influence.csv")
-node = read_csv("./tutorial/data/node_influence.csv")
 
+# Import Data
+edge = read_csv("./data/edge_influence.csv")
+node = read_csv("./data/node_influence.csv")
 
-# R Code: Join node data to edge by source id
-full_edge_data = left_join(edge,node, by = c("ego_ID" = "node_ID"))
+# Merge Data Sets to the Dyadic Level
+merged_data = left_join(edge,node, by = c("alter_ID" = "individual_ID"))
 
-# R Code: Calculate Dyadic exposure
-full_edge_data = full_edge_data %>% mutate(exposure = information_receipt * negative_affect_t0)
+# Calculate the Dyadic Exposure
+merged_data = merged_data %>% mutate(exposure_dyad = information_receipt_t0 * negative_affect_t0)
 
-# Calculate mean exposure 
-total_exposure_tbl = full_edge_data %>% group_by(alter_ID) %>% summarize(total_exposure = sum(exposure,na.rm = TRUE))
+# Calculate the Exposure Term
+total_exposure_table = merged_data %>% group_by(ego_ID) %>% summarize(exposure_t0 = sum(exposure_dyad,na.rm = TRUE))
 
-# Include mean exposure in the node's data and handle cases where there was no exposure
-node = left_join(node,total_exposure_tbl, by = c("node_ID" = "alter_ID"))
+# Merge Data Sets to the Individual Level
+final_data = left_join(node,total_exposure_table, by = c("individual_ID" = "ego_ID"))
 
-# R Code: Run OLS analysis
-model_OLS = lm(negative_affect_t1 ~ negative_affect_t0 + total_exposure, data = node)
+# Influence Model in OLS Regression (both unstandardized and standardized)
+model_OLS = lm(negative_affect_t1 ~ negative_affect_t0 + exposure_t0, data = final_data)
+model_OLS_std = lm(scale(negative_affect_t1) ~ scale(negative_affect_t0) + scale(exposure_t0),
+                   data = final_data)
 
-# R Code: view results
-summary(model_OLS)
-
+# View Results
+summary(model_OLS) # Get unstandardized regression Coefficents
+summary(model_OLS_std) # Get Standardized Regression Coefficents
+confint.default(model_OLS_std) #Get confidence Intervals
+coef(model_OLS_std)["exposure_t0_std"]/coef(model_OLS_std)["negative_affect_t0_std"]
 
